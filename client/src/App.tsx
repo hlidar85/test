@@ -1,31 +1,34 @@
-import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
-import "./App.css";
-import { AppRouter } from "../../server/src/index";
-import { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
+import React, { useState } from "react";
+import { trpc } from "./utils/trpc";
+import Home from "./Home";
 
-const client = createTRPCProxyClient<AppRouter>({
-  links: [
-    httpBatchLink({
-      url: "http://localhost:3000/trpc",
-    }),
-  ],
-});
-
-const sayHi = await client.logToServer.mutate("hi from client");
-console.log(sayHi);
-
-console.log(await client.users.update.mutate({ userId: "1212", name: "jón" }));
 function App() {
-  const [hi, setHi] = useState("");
-  useEffect(() => {
-    const main = async () => {
-      const sayHi = await client.sayHi.query();
+  const [queryClient] = useState(() => new QueryClient());
+  const [trpcClient] = useState(() =>
+    trpc.createClient({
+      links: [
+        httpBatchLink({
+          url: "http://localhost:3000/trpc",
 
-      setHi(sayHi);
-    };
-    main();
-  }, []);
-  return <div> {hi}</div>;
+          // You can pass any HTTP headers you wish here
+          async headers() {
+            return {
+              // authorization: getAuthCookie(),
+            };
+          },
+        }),
+      ],
+    })
+  );
+
+  return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <Home />
+      </QueryClientProvider>
+    </trpc.Provider>
+  );
 }
-
 export default App;

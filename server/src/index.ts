@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { appRouter } from "./routers";
+import { AppRouter } from "./routers";
 import { createContext } from "./context";
 
 const app = express();
@@ -13,7 +13,7 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use(
   "/trpc",
   createExpressMiddleware({
-    router: appRouter,
+    router: AppRouter,
     createContext: createContext,
   })
 );
@@ -22,4 +22,4 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof AppRouter;
